@@ -1,0 +1,448 @@
+<div class="reading-app-container">
+  <style>
+    .reading-app-container * {
+      box-sizing: border-box !important;
+    }
+    .reading-app-container {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      background-color: #ffffff;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border: 1px solid #e2e8f0;
+      color: #334155;
+    }
+    .reading-app-container h2 {
+      text-align: center;
+      color: #1e293b;
+      font-size: 1.4rem;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    /* 選択ボックスのレイアウト修整 */
+    .reading-app-container .control-panel {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+    .reading-app-container .control-panel > div {
+      flex: 1;
+      min-width: 0; /* はみ出し防止 */
+    }
+    @media (max-width: 520px) {
+      .reading-app-container .control-panel {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+
+    .reading-app-container label {
+      font-weight: bold;
+      font-size: 0.85rem;
+      color: #475569;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .reading-app-container select {
+      width: 100%;
+      height: 42px;
+      padding: 0 10px;
+      font-size: 0.95rem;
+      border: 2px solid #cbd5e1;
+      border-radius: 8px;
+      background-color: #fff;
+      display: block;
+    }
+    .reading-app-container .progress-bar {
+      font-weight: bold;
+      color: #3b82f6;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .reading-app-container .text-card {
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: #0f172a;
+      line-height: 1.6;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      word-break: break-word;
+    }
+    .reading-app-container .nav-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      margin-bottom: 20px;
+    }
+    .reading-app-container .btn-sub {
+      background: #e2e8f0;
+      color: #475569;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.85rem;
+    }
+    .reading-app-container .btn-sub:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .reading-app-container .btn-main-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .reading-app-container .btn-record {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      padding: 14px 36px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+      transition: all 0.2s;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .reading-app-container .btn-record:hover {
+      background-color: #1d4ed8;
+    }
+    .reading-app-container .btn-record.recording {
+      background-color: #ef4444;
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+    .reading-app-container .result-box {
+      background: #ffffff;
+      border: 2px solid #10b981;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 15px;
+    }
+    .reading-app-container .score-badge {
+      text-align: center;
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #10b981;
+      margin: 5px 0 10px 0;
+    }
+    .reading-app-container .advice-box {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 10px 14px;
+      border-radius: 4px;
+      color: #b45309;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+    .reading-app-container .recognized-text {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+  </style>
+
+  <h2>🎤 中学1年 英語音読チャレンジ！</h2>
+
+  <!-- Unit / Part 選択 -->
+  <div class="control-panel">
+    <div>
+      <label for="unit-select">単元（Unit）:</label>
+      <select id="unit-select" onchange="onUnitChange()"></select>
+    </div>
+    <div>
+      <label for="part-select">パート（Part）:</label>
+      <select id="part-select" onchange="onPartChange()"></select>
+    </div>
+  </div>
+
+  <!-- 進捗 & ナビゲーション -->
+  <div class="progress-bar">
+    <span id="progress-text">文 1 / 3</span>
+  </div>
+
+  <!-- 一文表示カード -->
+  <div class="text-card" id="target-sentence">---</div>
+
+  <div class="nav-buttons">
+    <button class="btn-sub" id="prev-btn" onclick="prevSentence()">◀ 前の文</button>
+    <button class="btn-sub" id="next-btn" onclick="nextSentence()">次の文 ▶</button>
+  </div>
+
+  <!-- 録音ボタン -->
+  <div class="btn-main-container">
+    <button class="btn-record" id="record-btn" onclick="toggleRecording()">🎤 この文を音読する</button>
+  </div>
+
+  <!-- 結果表示 -->
+  <div id="result-area" class="result-box" style="display: none;">
+    <div id="score" class="score-badge">0点</div>
+    <div id="advice" class="advice-box">---</div>
+    <div class="recognized-text">
+      <strong>聞き取れた英語:</strong> <span id="recognized-output"></span>
+    </div>
+  </div>
+
+  <script>
+    // 教科書本文データ構造 (Book 1 全データ)
+    const textbookData = {
+      "Unit 0 Nice to Meet You": {
+        "p.6": ["Good morning, I’m Anna.", "Hi, my name is Jun."],
+        "p.7": ["Hello.", "Do you like tennis?", "Yes, I do."],
+        "Grammar for Communication 0": ["I like red.", "I like P.E.", "I play soccer.", "I have a cat.", "I want a bag."]
+      },
+      "Unit 1 Hello, Everyone!": {
+        "Part 1": ["Hello, everyone.", "I’m Edward Trout.", "Call me Eddy.", "I’m twelve.", "I’m from South Africa.", "I like Japanese sweets.", "I love daifuku and ammitsu.", "I love matcha, too.", "I want to join the sado club!"],
+        "Part 2": ["Eddy, do you like rugby?", "Yes, I do.", "I’m a rugby fan, too.", "I often watch rugby with my friends.", "Great!", "Do you play rugby?", "No, I don’t.", "I don’t play rugby, but I play soccer.", "Oh, I play soccer, too."],
+        "Part 3": ["Do you like comics?", "Yes, I do.", "I draw comics, too.", "Wow!", "Are you an anime fan?", "Yes, I am.", "So, are you in the manga club?", "No, I’m not.", "I’m in the art club.", "How about you?", "I’m not in a school club now, but I take swimming lessons."]
+      },
+      "Unit 2 Our New Teacher": {
+        "Part 1": ["Ms. Chen, this is Jun.", "He’s in Class 1-1.", "Jun, this is Ms. Chen.", "She’s our new English teacher.", "She’s from Canada.", "Hello, Jun.", "Nice to meet you.", "Nice to meet you, too.", "Is he on the soccer team?", "Yes, he is.", "He’s good at playing soccer.", "Cool!"],
+        "Part 2": ["Do you like Chinese food, Jun?", "Yes, I do.", "My father can make gyoza very well.", "That’s nice.", "Can you make gyoza, too?", "Yes, I can.", "Ms. Chen, can you read hiragana?", "No, I can’t, but I can read some kanji.", "Really?", "Yes, my parents are from China.", "Oh, I see."],
+        "Part 3": ["Excuse me.", "Is this your pen?", "Oops.", "Yes, that’s my pen.", "Here you are.", "Thank you.", "You’re welcome.", "Your pen is cool.", "This is a totem pole.", "It’s from Canada.", "Is this a bird?", "Yes, it is.", "It’s a thunderbird.", "Is this a fox?", "No, it’s not.", "It’s a wolf."]
+      },
+      "Unit 3 Our School": {
+        "Part 1": ["Hi, Riko!", "What’s that?", "It’s a kamon, a symbol for a family.", "That’s interesting!", "It’s from my favorite comic.", "What’s the comic about?", "It’s about a samurai.", "Oh, a samurai!", "Who’s your favorite character?", "My favorite character is Kojiro.", "Why?", "He’s strong and brave.", "He’s also very kind."],
+        "Part 2": ["Ms. Chen, do you live around here?", "Yes, I do.", "How do you come to school?", "By bike?", "No, I walk.", "When do you come to our school?", "I come on Mondays and Fridays.", "I see.", "What do you do after school?", "I usually study Japanese online.", "Wow!"],
+        "Part 3": ["Hi, Jun.", "Where do you practice on rainy days?", "We practice in the hallway.", "You practice very hard.", "Yes.", "We want to win the next game.", "Good luck!", "When’s the next game?", "It’s on July 5th.", "I want to go and see the game!", "Oh, really?", "It’s at Midori Park.", "Where’s that?", "It’s near the station."]
+      },
+      "Unit 4 Friends in New Zealand": {
+        "Part 1": ["Hello from New Zealand!", "I’m David.", "I really like animals.", "My family and I have a cat, two horses, three dogs, and four puppies.", "One of my dogs is a Japanese Akita.", "I want to visit Japan someday!", "Hi, I’m Riko.", "You have a lot of animals!", "I have some rabbits.", "Great!", "How many rabbits do you have?", "I have three rabbits.", "They’re so cute!"],
+        "Part 2": ["It’s noon in Japan now.", "What time is it in New Zealand?", "It’s three in the afternoon.", "This is our last class today.", "What do you do after school?", "I usually play sports.", "What sports do you play?", "I play soccer, tennis, netball, . . . .", "Netball?", "Yes.", "It’s a sport like basketball.", "Sounds interesting!"],
+        "Part 3": ["Jun.", "It’s your turn.", "Come to the front, please.", "Me?", "Oh, no.", "Be brave.", "You can do it.", "I’m so nervous.", "Don’t worry.", "Enjoy yourself.", "What animals can we see in New Zealand?", "You can see sheep, kiwis, . . . .", "Kiwis?", "Kiwis are fruit, right?", "Yes, but kiwis are birds, too.", "Look at my T-shirt.", "This is a kiwi.", "Oh, it’s cute!"]
+      },
+      "Unit 5 My Brother in Hawaii": {
+        "Part 1": ["This is my brother, Fumiya.", "He’s twenty-four years old.", "He lives in Honolulu, Hawaii.", "He works as a tour guide.", "He really likes Hawaii.", "He can speak English very well.", "Fumiya studies a lot about Hawaii.", "He writes a blog about local food, nature, and beautiful spots.", "I enjoy reading his blog very much."],
+        "Part 2": ["Do you have any questions?", "Yes.", "Does Fumiya live near a beach?", "Yes, he does.", "Hawaii has many beautiful beaches.", "Does he go to the beach every day?", "No, he doesn’t.", "Not every day.", "He usually goes to the beach on weekends.", "What does he do there?", "He swims and surfs with his friends.", "Sometimes he swims with dolphins.", "He really enjoys life in Hawaii.", "Wow, that’s nice!"],
+        "Read and Think": ["Cafe Maria is my favorite restaurant in Honolulu.", "The restaurant does not have a website, but it is very popular.", "Maria is the owner of the restaurant.", "She does not speak Japanese, but she knows a lot about Japan.", "She is kind and friendly.", "My favorite dish there is loco moco.", "It is a beef patty and a fried egg on top of rice.", "It is wonderful."]
+      },
+      "Unit 6 A Rakugo Performer from the U.K.": {
+        "Part 1": ["Oh, that’s Tom.", "Do you know him?", "No, I don’t.", "Is he your friend?", "Yes.", "He’s in class 2-2.", "Let’s say hi to him.", "Hello, Tom.", "Hi.", "How’s everything?", "Everything is fine.", "Oh, what’s that?", "This is a poster for a rakugo show.", "Oh, that’s Diane Kichijitsu.", "I like her.", "Who is she?", "She’s a rakugo performer from the U.K.", "I want to see her.", "Why don’t we go together?"],
+        "Part 2": ["The show starts in five minutes.", "I can’t wait!", "Oh, whose ticket is this?", "Is it yours, Eddy?", "No.", "I have mine.", "Maybe it’s Riko’s.", "Oops!", "Yes, it’s mine.", "Thanks.", "Be careful with that.", "Wow.", "It’s very crowded here.", "Yes.", "Rakugo has a long history, and it’s still popular today.", "How old is rakugo?", "Well, it’s over 400 years old.", "Over 400?", "Wow!"],
+        "Read and Think": ["Rakugo is Japanese comic storytelling.", "A performer on a cushion plays different roles.", "The performer uses only two props, a fan and a hand towel.", "I usually speak English, but I sometimes speak Japanese.", "I usually wear casual clothes, but I love kimonos.", "I have a large kimono collection."]
+      },
+      "Unit 7 An Online Tour of the U.K.": {
+        "Part 1": ["Hello?", "Hello, Eddy?", "This is Anna.", "Are you busy now?", "No.", "I’m watching TV, but I can talk.", "What’s up?", "I’m thinking about tomorrow.", "Do you have any plans?", "Tomorrow?", "No, I’m free.", "Why?", "Let’s visit the U.K. together.", "The U.K.?", "What do you mean?", "Well, I’m talking about an online tour.", "Wow.", "Sounds like fun.", "Great.", "Can you come to my house at three?", "Sure.", "I’m looking forward to it."],
+        "Part 2": ["Welcome to our online tour.", "I’m Kate.", "I’m at a market in London now.", "You can buy food and souvenirs here.", "Also, this place appears in the Harry Potter movies.", "Cool.", "What are those people doing?", "They’re taking pictures.", "Hi, I’m John.", "I’m in the Lake District.", "This place is the home of Peter Rabbit.", "Wow, I love Peter Rabbit!", "Are you walking around a lake?", "Yes, I am.", "It’s very beautiful."],
+        "Read and Think": ["Eddy, what are you doing?", "It’s 6 o’clock.", "Are you still with your friends?", "Yes, I’m sorry.", "We’re traveling in London now.", "It’s a big city.", "London?", "What a funny excuse!", "Don’t be angry.", "We’re taking an online tour.", "We’re looking at Buckingham Palace now.", "The guide is taking some pictures for us.", "An online tour?", "How interesting!", "Well, that sounds exciting, but don’t be too late.", "OK, Mom.", "Thanks!"]
+      },
+      "Unit 8 Think Globally, Act Locally": {
+        "Part 1": ["This is Mina, my cousin.", "She works in an ethnic restaurant in our town.", "She loves Africa.", "Every summer, she visits Kenya as a volunteer.", "She wants to help people in need.", "Some children can’t go to school.", "It’s a big problem in some countries.", "Mina teaches children in Kenya.", "She always tries to do her best.", "I respect her, and I want to become like her."],
+        "Part 2": ["Let’s eat some African food.", "What do you want to eat?", "I want to eat meat pie, bean soup, chicken curry, . . . .", "We can’t eat all that food, Eddy.", "We need to reduce food waste.", "You’re right.", "In our restaurant, we try to reduce plastic waste.", "We use paper straws.", "We make original reusable bags, too.", "Do you want to see one?", "Yes, of course!"],
+        "Read and Think": ["The children in this picture are getting clean water from a well.", "They look happy.", "On the other hand, in some villages, children collect water at the river.", "It is very far.", "They walk for a long time every day.", "They want to go to school, but they do not have time.", "Our volunteer group builds wells in places like these.", "We are collecting money for them.", "We need your help."]
+      },
+      "Unit 9 Winter Vacation": {
+        "Part 1": ["I went back to Canada during the winter vacation.", "I went to the mountains and stayed in Whistler Village for a week.", "The village is famous for winter sports.", "I enjoyed snowboarding there.", "On Christmas Day, I relaxed at home with my family in Vancouver.", "On December 31st, I met my friends and watched an ice hockey game with them.", "I saw my favorite player in that game.", "I enjoyed my vacation very much."],
+        "Part 2": ["Did you enjoy your vacation, Anna?", "Yes, I did.", "I tried some traditional Japanese food with my family.", "That’s nice!", "Did you eat rice cakes?", "No, I didn’t.", "But we ate special soba on New Year’s Eve.", "How nice!", "How about you, Riko?", "What did you do?", "I cleaned my grandparents’ house with my family.", "Good for you!", "After that, I wrote New Year’s cards and watched TV."],
+        "Read and Think": ["I spent the New Year at Jun’s grandparents’ house.", "On New Year’s Day, Jun, his grandparents and I went to a shrine.", "Many people came to the shrine.", "I bought a fortune slip.", "Jun read it and said, “It’s sue-kichi.", "Your future is not so bad.”", "I did not buy a good luck charm, but I got a special wooden tablet and wrote my wish on it.", "In the evening, we enjoyed sugoroku, a Japanese board game together.", "We had a great time."]
+      },
+      "Unit 10 This Year’s Memories": {
+        "Part 1": ["I remember our chorus contest.", "At first, I didn’t like singing, so I was bored during practice.", "You were so angry.", "Yes, I was.", "I wanted to win first place.", "I realized that, so I tried hard.", "Were you nervous during the contest?", "No, I wasn’t, but I made some mistakes.", "Really?", "Well, anyone can make mistakes.", "We won anyway.", "We were so happy after the contest.", "I know.", "It’s my best memory.", "I like singing now."],
+        "Part 2": ["Hey, Jun.", "I didn’t see you during lunch break.", "What were you doing?", "I was playing soccer then.", "Were you looking for me?", "Yes.", "I wanted to show this to you.", "It’s a photo album for this year.", "I made it yesterday.", "Wow.", "These pictures bring back a lot of memories.", "I remember the first day.", "I was really nervous.", "My heart was beating fast on my way to school.", "Now I enjoy each and every day with you all."],
+        "Read and Think": ["I remember our school camping trip in July.", "We went to Lake Sakura.", "There is a campground near the lake.", "The campground is large and clean.", "There is a hot spring, too.", "We set up our tents and stayed for two nights.", "The main event on the second evening was a campfire.", "There were many students around the campfire.", "Jun was there, too.", "We talked a lot.", "It is my best memory."]
+      },
+      "Let’s Read Gon, the Fox": {
+        "Story Part 1": ["Gon was a naughty little fox and loved to play tricks.", "One day he saw a man, Hyoju, by the river.", "Hyoju’s basket was full of eels.", "Gon crept up and let the eels out of the basket.", "“Stop!” Hyoju shouted, but Gon and the eels escaped.", "Ten days later, Gon went to the village.", "There were many people in white kimonos at Hyoju’s house.", "Hyoju looked sad.", "Gon thought, “Hyoju’s mother died.", "The eels were for her.", "Now, Hyoju is alone, like me.”"],
+        "Story Part 2": ["The next day, Gon took some fish from a vendor’s cart and left them at Hyoju’s house.", "Another time, Gon brought some chestnuts and heard something.", "Hyoju said to himself, “The fish vendor is angry with me.", "But I didn’t take the fish!”", "After that, Gon only brought chestnuts and mushrooms for Hyoju.", "Hyoju said to his neighbor, “Every day, I receive food from someone ― gifts of chestnuts and mushrooms.", "Who brings these things?”", "The neighbor said, “Maybe it’s a god.”", "Gon heard and thought, “It’s not a god, it’s me.”"],
+        "Story Part 3": ["The next day, Gon crept through the door into Hyoju’s house.", "Hyoju looked up.", "“That’s Gon, the naughty fox!", "He took my eels!”", "Hyoju picked up his gun.", "Bang!", "Gon fell to the ground.", "Then Hyoju saw the fresh chestnuts on the floor.", "“Oh, Gon, was it you?", "You helped me?”", "Gon nodded weakly.", "Hyoju dropped his gun.", "Blue smoke rose from the gun."]
+      }
+    };
+
+    let currentUnit = "";
+    let currentPart = "";
+    let currentIndex = 0;
+    let isRecording = false;
+    let recognition = null;
+
+    // 初期化
+    window.addEventListener('DOMContentLoaded', () => {
+      initApp();
+    });
+
+    function initApp() {
+      const unitSelect = document.getElementById("unit-select");
+      unitSelect.innerHTML = "";
+      Object.keys(textbookData).forEach(unit => {
+        const opt = document.createElement("option");
+        opt.value = unit;
+        opt.innerText = unit;
+        unitSelect.appendChild(opt);
+      });
+
+      onUnitChange();
+    }
+
+    // 音声認識オブジェクトを安全に作成
+    function createRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) return null;
+
+      const rec = new SpeechRecognition();
+      rec.lang = 'en-US';
+      rec.interimResults = false;
+
+      rec.onresult = (event) => {
+        const spokeText = event.results[0][0].transcript;
+        evaluateSpeech(spokeText);
+      };
+      rec.onerror = (e) => {
+        console.error("Speech Rec Error:", e);
+        alert("音声をうまく認識できませんでした。マイクの許可を確認し、もう一度試してください。");
+        stopRecordingUI();
+      };
+      rec.onend = () => {
+        stopRecordingUI();
+      };
+
+      return rec;
+    }
+
+    function onUnitChange() {
+      const unitSelect = document.getElementById("unit-select");
+      currentUnit = unitSelect.value;
+
+      const partSelect = document.getElementById("part-select");
+      partSelect.innerHTML = "";
+      Object.keys(textbookData[currentUnit]).forEach(part => {
+        const opt = document.createElement("option");
+        opt.value = part;
+        opt.innerText = part;
+        partSelect.appendChild(opt);
+      });
+
+      onPartChange();
+    }
+
+    function onPartChange() {
+      const partSelect = document.getElementById("part-select");
+      currentPart = partSelect.value;
+      currentIndex = 0;
+      updateSentenceDisplay();
+    }
+
+    function updateSentenceDisplay() {
+      const sentences = textbookData[currentUnit][currentPart];
+      document.getElementById("target-sentence").innerText = sentences[currentIndex];
+      document.getElementById("progress-text").innerText = `文 ${currentIndex + 1} / ${sentences.length}`;
+      
+      document.getElementById("prev-btn").disabled = (currentIndex === 0);
+      document.getElementById("next-btn").disabled = (currentIndex === sentences.length - 1);
+
+      document.getElementById("result-area").style.display = "none";
+    }
+
+    function nextSentence() {
+      const sentences = textbookData[currentUnit][currentPart];
+      if (currentIndex < sentences.length - 1) {
+        currentIndex++;
+        updateSentenceDisplay();
+      }
+    }
+
+    function prevSentence() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateSentenceDisplay();
+      }
+    }
+
+    function toggleRecording() {
+      if (!recognition) {
+        recognition = createRecognition();
+      }
+
+      if (!recognition) {
+        alert("お使いの端末・ブラウザは音声認識に対応していません。iPhoneの場合はSafariアプリをご利用ください。（LINEやChromeなどの内蔵ブラウザでは動かない場合があります）");
+        return;
+      }
+
+      if (!isRecording) {
+        try {
+          recognition.start();
+          isRecording = true;
+          const btn = document.getElementById("record-btn");
+          btn.innerHTML = "&#x23f9; 録音中...（話し終わると自動判定）";
+          btn.classList.add("recording");
+        } catch (e) {
+          console.error(e);
+          alert("録音の開始に失敗しました。もう一度ボタンを押してください。");
+          stopRecordingUI();
+        }
+      } else {
+        recognition.stop();
+        stopRecordingUI();
+      }
+    }
+
+    function stopRecordingUI() {
+      isRecording = false;
+      const btn = document.getElementById("record-btn");
+      btn.innerHTML = "&#x1f3a4; この文を音読する";
+      btn.classList.remove("recording");
+    }
+
+    function cleanWords(text) {
+      return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(w => w.length > 0);
+    }
+
+    function evaluateSpeech(spokeText) {
+      const targetText = textbookData[currentUnit][currentPart][currentIndex];
+      const targetWords = cleanWords(targetText);
+      const spokeWords = cleanWords(spokeText);
+
+      let matchCount = 0;
+      let missingWords = [];
+
+      targetWords.forEach(word => {
+        if (spokeWords.includes(word)) {
+          matchCount++;
+        } else {
+          missingWords.push(word);
+        }
+      });
+
+      const accuracy = targetWords.length > 0 ? Math.round((matchCount / targetWords.length) * 100) : 0;
+
+      document.getElementById("score").innerText = accuracy + "点";
+      document.getElementById("recognized-output").innerText = spokeText;
+
+      let adviceText = "";
+      if (accuracy === 100) {
+        adviceText = "&#x1f389; パーフェクト！発音も単語もばっちりです！";
+      } else if (accuracy >= 80) {
+        adviceText = `&#x1f44d; おしい！とても上手に読めています。`;
+        if (missingWords.length > 0) {
+          adviceText += ` 「${missingWords.join(', ')}」の発音を意識してみよう！`;
+        }
+      } else if (accuracy >= 50) {
+        adviceText = `&#x1f4aa; あと一歩！ゆっくりでもいいので単語を一つずつハッキリ声に出してみよう。`;
+      } else {
+        adviceText = `&#x1f60a; お手本の英文をしっかり見ながら、もう一度チャレンジしてみよう！`;
+      }
+
+      document.getElementById("advice").innerHTML = adviceText;
+      document.getElementById("result-area").style.display = "block";
+    }
+  </script>
+</div>
